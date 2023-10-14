@@ -9,7 +9,7 @@ class PostAdmin(admin.ModelAdmin):
     Можно найти по тексту. Фильтр по дате добавления.
     """
 
-    list_display = ('pk', 'text', 'pub_date', 'author',)
+    list_display = ('id', 'text', 'pub_date', 'author',)
     search_fields = ('text',)
     list_filter = ('pub_date',)
     empty_value_display = '-пусто-'
@@ -53,4 +53,4 @@ class FollowAdmin(admin.ModelAdmin):
         'user',
         'following',
     )
-    list_display_links = ('post', 'following')
+    list_display_links = ('user', 'following')
