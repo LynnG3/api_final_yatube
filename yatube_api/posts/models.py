@@ -9,13 +9,14 @@ SHOW_SYMBOLS = 30
 class Group(models.Model):
     """Модель тематической группы постов."""
 
-    title = models.CharField("Заголовок", max_length=200)
-    slug = models.SlugField(unique=True)
-    description = models.TextField("Описание")
+    title = models.CharField('Заголовок', max_length=200)
+    slug = models.SlugField('Слаг', unique=True)
+    description = models.TextField('Описание')
 
     class Meta:
-        verbose_name = "группа"
-        verbose_name_plural = "группы"
+        verbose_name = 'группа'
+        verbose_name_plural = 'группы'
+        ordering = ['id']
 
     def __str__(self):
         return self.title[:SHOW_SYMBOLS]
@@ -37,7 +38,8 @@ class Post(models.Model):
     image = models.ImageField(
         upload_to='posts/',
         null=True,
-        blank=True
+        blank=True,
+        verbose_name='изображение'
     )
     group = models.ForeignKey(
         Group,
@@ -48,9 +50,10 @@ class Post(models.Model):
     )
 
     class Meta:
-        default_related_name = "posts"
-        verbose_name = "публикация"
-        verbose_name_plural = "публикации"
+        default_related_name = 'posts'
+        verbose_name = 'публикация'
+        verbose_name_plural = 'публикации'
+        ordering = ['pub_date']
 
     def __str__(self):
         return self.text[:SHOW_SYMBOLS]
@@ -80,9 +83,10 @@ class Comment(models.Model):
         verbose_name='Отредактирован')
 
     class Meta:
-        default_related_name = "comments"
-        verbose_name = "комментарий"
-        verbose_name_plural = "Комментарии"
+        default_related_name = 'comments'
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ['created']
 
     def __str__(self):
         return (f'{self.author} прокомментировал '
@@ -95,7 +99,7 @@ class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='user',
+        related_name='follower',
         verbose_name='Пользователь'
     )
 
@@ -109,6 +113,15 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'подписка'
         verbose_name_plural = 'подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'following'], name='unique_follow'
+            ),
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_prevent_self_follow',
+                check=~models.Q(user=models.F('following')),
+            ),
+        ]
 
     def __str__(self):
         return (
