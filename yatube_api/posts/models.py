@@ -3,24 +3,115 @@ from django.db import models
 
 User = get_user_model()
 
+SHOW_SYMBOLS = 30
 
-class Post(models.Model):
-    text = models.TextField()
-    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='posts')
-    image = models.ImageField(
-        upload_to='posts/', null=True, blank=True)
+
+class Group(models.Model):
+    """Модель тематической группы постов."""
+
+    title = models.CharField("Заголовок", max_length=200)
+    slug = models.SlugField(unique=True)
+    description = models.TextField("Описание")
+
+    class Meta:
+        verbose_name = "группа"
+        verbose_name_plural = "группы"
 
     def __str__(self):
-        return self.text
+        return self.title[:SHOW_SYMBOLS]
+
+
+class Post(models.Model):
+    """Модель публикации."""
+
+    text = models.TextField()
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='автор'
+    )
+    image = models.ImageField(
+        upload_to='posts/',
+        null=True,
+        blank=True
+    )
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.SET_NULL,
+        verbose_name='группа',
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        default_related_name = "posts"
+        verbose_name = "публикация"
+        verbose_name_plural = "публикации"
+
+    def __str__(self):
+        return self.text[:SHOW_SYMBOLS]
 
 
 class Comment(models.Model):
+    """Модель комментария."""
+
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments')
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='{author} прокомментировал:'
+    )
     post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name='comments')
+        Post,
+        on_delete=models.CASCADE,
+        verbose_name='публикация'
+    )
     text = models.TextField()
     created = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True)
+        'Дата добавления',
+        auto_now_add=True,
+        db_index=True
+    )
+    updated = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Отредактирован')
+
+    class Meta:
+        default_related_name = "comments"
+        verbose_name = "комментарий"
+        verbose_name_plural = "Комментарии"
+
+    def __str__(self):
+        return (f'{self.author} прокомментировал '
+                f'публикацию {self.post}: {self.text[:SHOW_SYMBOLS]}')
+
+
+class Follow(models.Model):
+    """Модель подписки."""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='user',
+        verbose_name='Пользователь'
+    )
+
+    following = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='follows',
+        verbose_name='подписка на автора'
+    )
+
+    class Meta:
+        verbose_name = 'подписка'
+        verbose_name_plural = 'подписки'
+
+    def __str__(self):
+        return (
+            f'{self.user.username}'
+            f'подписан на {self.following.username}'
+        )
