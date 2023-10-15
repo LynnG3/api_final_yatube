@@ -65,4 +65,5 @@ class FollowViewSet(
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
+        follows = self.request.user.follower.all()
+        return follows

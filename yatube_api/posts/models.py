@@ -16,7 +16,7 @@ class Group(models.Model):
     class Meta:
         verbose_name = 'группа'
         verbose_name_plural = 'группы'
-        ordering = ['id']
+        ordering = ('title',)
 
     def __str__(self):
         return self.title[:SHOW_SYMBOLS]
@@ -53,7 +53,7 @@ class Post(models.Model):
         default_related_name = 'posts'
         verbose_name = 'публикация'
         verbose_name_plural = 'публикации'
-        ordering = ['pub_date']
+        ordering = ('pub_date',)
 
     def __str__(self):
         return self.text[:SHOW_SYMBOLS]
@@ -65,7 +65,7 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='{author} прокомментировал:'
+        verbose_name='автор комментария'
     )
     post = models.ForeignKey(
         Post,
@@ -86,7 +86,7 @@ class Comment(models.Model):
         default_related_name = 'comments'
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ['created']
+        ordering = ('created',)
 
     def __str__(self):
         return (f'{self.author} прокомментировал '
@@ -106,7 +106,7 @@ class Follow(models.Model):
     following = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='follows',
+        related_name='following',
         verbose_name='подписка на автора'
     )
 
